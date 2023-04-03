@@ -1,0 +1,5 @@
+num_classes: null
+pretrained: null
+loss: "softmax"
+feature_dim: 512
+use_gpu: True

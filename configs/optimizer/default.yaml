@@ -1,0 +1,2 @@
+optim: "adam"
+lr: 0.0003

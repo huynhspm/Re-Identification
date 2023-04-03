@@ -1,0 +1,9 @@
+defaults:
+  - default.yaml
+  - _self_
+
+_target_: torchreid.reid.engine.ImageTripletEngine
+
+margin: 0.3
+weight_t: 1
+weight_x: 1

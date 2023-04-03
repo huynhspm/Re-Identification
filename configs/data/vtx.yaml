@@ -1,0 +1,6 @@
+defautls:
+  - default.yaml
+  - _self_
+sources: vtx
+height: 256
+width: 128

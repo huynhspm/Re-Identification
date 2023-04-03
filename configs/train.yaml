@@ -1,0 +1,31 @@
+# @package _global_
+
+# specify here default configuration
+# order of defaults determines the order in which configs override each other
+defaults:
+  - _self_
+  - data: default.yaml
+  - engine: triplet.yaml
+  - model: triplet.yaml
+  - optimizer: default.yaml
+  - scheduler: default.yaml
+  - paths: default.yaml
+  - hydra: default.yaml
+
+# task name, determines output directory path
+task_name: "train"
+output_dir: ${paths.log_dir}/osnet_x1_0_origin_market_fine_tune
+model_path: ${paths.log_dir}/osnet_x1_0_origin_market/osnet_x1_0_market_256x128_amsgrad_ep150_stp60_lr0.0015_b64_fb10_softmax_labelsmooth_flip.pth
+
+max_epoch: 5
+start_epoch: 0
+print_freq: 10
+start_eval: 0
+eval_freq: 10
+test_only: False
+dist_metric: "euclidean"
+normalize_feature: False
+visrank: False
+visrank_topk: 10
+ranks: [1, 5, 10, 20]
+rerank: False

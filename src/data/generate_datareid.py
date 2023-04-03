@@ -86,6 +86,7 @@ def generate_frames(video_path, train_path, annotation_path):
     print(video_path)
     cam_id = video_path.split('/')[-1][:6]
     duration_id = video_path.split('/')[-2]
+    scenario_id = video_path.split('/')[-4]
     print("annotation path: ", annotation_path)
     group_frame = get_object_frame(annotation_path, frame_start=0)
 
@@ -101,14 +102,13 @@ def generate_frames(video_path, train_path, annotation_path):
         if (len(group_frame[frameId]) != 0):
             for idx, obj in enumerate(group_frame[frameId]):
                 x, y, w, h = list(map(int, obj.coord))
-                obj_id = obj.track_id
+                obj_id = f"{scenario_id}_ {duration_id}_{obj.track_id}"
                 save_path = os.path.join(train_path, f"{obj_id}")
                 crop_obj = image[y:y + h, x:x + w]
 
                 create_folder(save_path)
                 save_crop_name = os.path.join(
-                    save_path, "{}_{}_{}.jpg".format(cam_id, frameId,
-                                                     duration_id))
+                    save_path, "{}_{}.jpg".format(cam_id, frameId))
                 cv2.imwrite(save_crop_name, crop_obj)
 
     vidCapture.release()
@@ -178,6 +178,6 @@ def main(save_path, dataset_dir):
 
 if __name__ == "__main__":
     save_path = "data/vtx"
-    dataset_dir = "../datasets/VTX/COMBINE_DATA_V3"
+    dataset_dir = "data/COMBINE_DATA_V3"
     print("START")
     main(save_path, dataset_dir)

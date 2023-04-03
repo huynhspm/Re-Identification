@@ -1,5 +1,13 @@
+from typing import Tuple
+
 from torchreid.reid.models.osnet import OSNet, init_pretrained_weights, OSBlock
 from torchreid.reid.utils import (check_isfile, load_pretrained_weights)
+
+import hydra
+import pyrootutils
+from omegaconf import DictConfig
+
+pyrootutils.setup_root(__file__, indicator=".project-root", pythonpath=True)
 
 
 def osnet_x1_0(num_classes=1000,
@@ -20,26 +28,30 @@ def osnet_x1_0(num_classes=1000,
     return model
 
 
-def main():
-    model_path = 'logs/osnet_x1_0_from_scratch_full_data_filter_bboxes/model.pth.tar-5'
-    pretrained = (model_path and check_isfile(model_path))
-    device = 'cuda'
+@hydra.main(version_base="1.3",
+            config_path="../configs",
+            config_name="eval.yaml")
+def inference(cfg: DictConfig) -> Tuple[dict, dict]:
+    # model_path = 'logs/osnet_x1_0_from_scratch_full_data_filter_bboxes/model.pth.tar-5'
+    pretrained = (cfg.model_path and check_isfile(cfg.model_path))
 
     model = osnet_x1_0(num_classes=1,
                        pretrained=not pretrained,
-                       loss='triplet',
-                       feature_dim=256,
-                       use_gpu=device.startswith('cuda'))
+                       loss=cfg.model.loss,
+                       feature_dim=cfg.model.feature_dim,
+                       use_gpu=cfg.model.use_gpu)
 
     print('+++++++++++++++')
     print('pretrained: ', pretrained)
-    print('model_path: ', model_path)
+    print('model_path: ', cfg.model_path)
     print(model.feature_dim)
     print('+++++++++++++++')
 
-    model.eval()
     if pretrained:
-        load_pretrained_weights(model, model_path)
+        load_pretrained_weights(model, cfg.model_path)
+
+    model.eval()
+    model = model.cuda()
 
     import torch
     import glob
@@ -80,4 +92,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    inference()

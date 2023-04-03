@@ -17,3 +17,8 @@ imageio
 torch
 torchreid
 torchvision
+hydra-core==1.3.2
+hydra-colorlog==1.2.0
+hydra-optuna-sweeper==1.2.0
+pyrootutils 
+omegaconf==2.2.3

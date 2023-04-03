@@ -1,12 +1,18 @@
-from vtx import VTX
+from typing import Tuple
+
 from torchreid.reid.models.osnet import OSNet, init_pretrained_weights, OSBlock
 from torchreid.reid.data import ImageDataManager
-from torchreid.reid.engine import ImageTripletEngine, ImageSoftmaxEngine
 from torchreid.reid.utils import check_isfile, load_pretrained_weights
 from torchreid.reid.data.datasets import register_image_dataset
 from torchreid.reid.optim import build_lr_scheduler, build_optimizer
 
-register_image_dataset('vtx', VTX)
+import hydra
+import pyrootutils
+from omegaconf import DictConfig
+
+pyrootutils.setup_root(__file__, indicator=".project-root", pythonpath=True)
+
+from src.data.vtx import VTX
 
 
 def osnet_x1_0(num_classes=1000,
@@ -27,83 +33,78 @@ def osnet_x1_0(num_classes=1000,
     return model
 
 
-def main():
-    datamanager = ImageDataManager(root='data',
-                                   sources='vtx',
-                                   height=256,
-                                   width=128,
-                                   train_sampler='RandomIdentitySampler',
-                                   batch_size_train=32,
-                                   batch_size_test=100,
-                                   transforms=['random_flip', 'random_erase'])
+@hydra.main(version_base="1.3",
+            config_path="../configs",
+            config_name="train.yaml")
+def train(cfg: DictConfig) -> Tuple[dict, dict]:
+    register_image_dataset('vtx', VTX)
 
-    dir_path = 'logs/osnet_x1_0_origin_market_fine_tune'
-    model_path = 'logs/osnet_x1_0_origin_market/osnet_x1_0_market_256x128_amsgrad_ep150_stp60_lr0.0015_b64_fb10_softmax_labelsmooth_flip.pth'
-    pretrained = (model_path and check_isfile(model_path))
+    datamanager = ImageDataManager(root=cfg.data.root,
+                                   sources=cfg.data.sources,
+                                   height=cfg.data.height,
+                                   width=cfg.data.width,
+                                   train_sampler=cfg.data.train_sampler,
+                                   batch_size_train=cfg.data.batch_size_train,
+                                   batch_size_test=cfg.data.batch_size_test,
+                                   transforms=list(cfg.data.transforms))
+
+    pretrained = (cfg.model_path and check_isfile(cfg.model_path))
 
     model = osnet_x1_0(num_classes=datamanager.num_train_pids,
                        pretrained=not pretrained,
-                       loss='triplet',
-                       feature_dim=512,
-                       use_gpu=True)
+                       loss=cfg.model.loss,
+                       feature_dim=cfg.model.feature_dim,
+                       use_gpu=cfg.model.use_gpu)
+
     if pretrained:
-        load_pretrained_weights(model, model_path)
+        load_pretrained_weights(model, cfg.model_path)
 
     model = model.cuda()
-    optimizer = build_optimizer(model, optim="adam", lr=0.0003)
+    optimizer = build_optimizer(model,
+                                optim=cfg.optimizer.optim,
+                                lr=cfg.optimizer.lr)
     scheduler = build_lr_scheduler(optimizer,
-                                   lr_scheduler="single_step",
-                                   stepsize=20)
+                                   lr_scheduler=cfg.scheduler.lr_scheduler,
+                                   stepsize=cfg.scheduler.stepsize)
 
     # frozen first layer
     for param in model.conv1.parameters():
         param.requires_grad = False
 
-    engine = ImageTripletEngine(datamanager,
-                                model,
-                                optimizer=optimizer,
-                                margin=0.3,
-                                weight_t=1,
-                                weight_x=1,
-                                scheduler=scheduler,
-                                use_gpu=True,
-                                label_smooth=True)
-
-    # engine = ImageSoftmaxEngine(datamanager,
-    #                             model,
-    #                             optimizer=optimizer,
-    #                             scheduler=scheduler,
-    #                             use_gpu=True,
-    #                             label_smooth=True)
+    engine = hydra.utils.instantiate(cfg.engine,
+                                     datamanager=datamanager,
+                                     model=model,
+                                     optimizer=optimizer,
+                                     scheduler=scheduler)
 
     print('+++++++++++++++')
     print(datamanager.transform_tr)
     print('pretrained: ', pretrained)
-    print('model_path: ', model_path)
+    print('model_path: ', cfg.model_path)
     print(model.feature_dim)
     print('+++++++++++++++')
 
-    engine.run(save_dir=dir_path,
-               max_epoch=5,
-               start_epoch=0,
-               print_freq=10,
-               start_eval=0,
-               eval_freq=10,
-               test_only=False,
-               dist_metric='euclidean',
-               normalize_feature=False,
-               visrank=False,
-               visrank_topk=10,
-               ranks=[1, 5, 10, 20],
-               rerank=False)
+    engine.run(save_dir=cfg.output_dir,
+               max_epoch=cfg.max_epoch,
+               start_epoch=cfg.start_epoch,
+               print_freq=cfg.print_freq,
+               start_eval=cfg.start_eval,
+               eval_freq=cfg.eval_freq,
+               test_only=cfg.test_only,
+               dist_metric=cfg.dist_metric,
+               normalize_feature=cfg.normalize_feature,
+               visrank=cfg.visrank,
+               visrank_topk=cfg.visrank_topk,
+               ranks=cfg.ranks,
+               rerank=cfg.rerank)
 
     print('+++++++++++++++')
     print(datamanager.transform_tr)
     print('pretrained: ', pretrained)
-    print('model_path: ', model_path)
+    print('model_path: ', cfg.model_path)
     print(model.feature_dim)
     print('+++++++++++++++')
 
 
 if __name__ == "__main__":
-    main()
+    train()

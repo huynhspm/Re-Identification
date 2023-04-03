@@ -1,0 +1,10 @@
+_target_: torchreid.reid.data.ImageDataManager
+
+root: ${paths.data_dir}
+sources: vtx
+height: 256
+width: 128
+train_sampler: RandomIdentitySampler
+batch_size_train: 32
+batch_size_test: 100
+transforms: [random_flip, random_erase]

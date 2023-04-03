@@ -43,7 +43,7 @@ class VTX(ImageDataset):
 
         humanId_container = set()
         for human_dir in human_dirs:
-            humanId = int(human_dir.split("/")[-1])
+            humanId = human_dir.split("/")[-1]
             humanId_container.add(humanId)
         humanId2label = {
             humanId: label
@@ -54,7 +54,7 @@ class VTX(ImageDataset):
         for human_dir in human_dirs:
             img_paths = glob.glob(osp.join(human_dir, "*.jpg"))
 
-            humanId = int(human_dir.split("/")[-1])
+            humanId = human_dir.split("/")[-1]
             if relabel:
                 humanId = humanId2label[humanId]
 
