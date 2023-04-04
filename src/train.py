@@ -38,6 +38,7 @@ def osnet_x1_0(num_classes=1000,
             config_path="../configs",
             config_name="train.yaml")
 def train(cfg: DictConfig) -> Tuple[dict, dict]:
+    print(cfg.data)
     if cfg.data.sources == 'vtx':
         register_image_dataset('vtx', VTX)
     elif cfg.data.sources == 'vtx_mini':

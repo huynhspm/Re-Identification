@@ -1,4 +1,4 @@
-defautls:
+defaults:
   - default.yaml
   - _self_
 sources: vtx
