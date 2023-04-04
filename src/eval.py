@@ -11,7 +11,9 @@ import pyrootutils
 from omegaconf import DictConfig
 
 pyrootutils.setup_root(__file__, indicator=".project-root", pythonpath=True)
+
 from src.data.vtx import VTX
+from src.data.vtx_mini import VTX_MINI
 
 
 def osnet_x1_0(num_classes=1000,
@@ -36,7 +38,12 @@ def osnet_x1_0(num_classes=1000,
             config_path="../configs",
             config_name="eval.yaml")
 def eval(cfg: DictConfig) -> Tuple[dict, dict]:
-    register_image_dataset('vtx', VTX)
+    if cfg.data.sources == 'vtx':
+        register_image_dataset('vtx', VTX)
+    elif cfg.data.sources == 'vtx_mini':
+        register_image_dataset('vtx_mini', VTX_MINI)
+    else:
+        raise ValueError('Invalid dataset name')
 
     datamanager = ImageDataManager(root=cfg.data.root,
                                    sources=cfg.data.sources,

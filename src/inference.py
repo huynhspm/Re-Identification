@@ -32,7 +32,6 @@ def osnet_x1_0(num_classes=1000,
             config_path="../configs",
             config_name="eval.yaml")
 def inference(cfg: DictConfig) -> Tuple[dict, dict]:
-    # model_path = 'logs/osnet_x1_0_from_scratch_full_data_filter_bboxes/model.pth.tar-5'
     pretrained = (cfg.model_path and check_isfile(cfg.model_path))
 
     model = osnet_x1_0(num_classes=1,

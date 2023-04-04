@@ -68,7 +68,7 @@ def split_gallery_query(query_path, gallery_path, query_sample=1):
             shutil.move(img, save_folder)
 
 
-def generate_frames(video_path, train_path, annotation_path):
+def generate_frames(video_path, train_path, annotation_path, skip=1):
     vidCapture = cv2.VideoCapture(video_path)
     success, image = vidCapture.read()
 
@@ -97,6 +97,9 @@ def generate_frames(video_path, train_path, annotation_path):
         frameId = int(round(vidCapture.get(cv2.CAP_PROP_POS_FRAMES)))
 
         success, image = vidCapture.read()
+
+        if frameId % skip != 0: continue
+        # print(frameId)
 
         if (image is None): continue
         if (len(group_frame[frameId]) != 0):
@@ -152,7 +155,7 @@ def create_data(save_path, data_dir, valid_scenarios=None):
                 video_path = camera
                 camera_id = camera.split('/')[-1][:6]
                 annotation_path = f"{scenario}/MOT_gt_processed_v2/{duration_id}/{camera_id}/gt/gt.txt"
-                generate_frames(video_path, save_path, annotation_path)
+                generate_frames(video_path, save_path, annotation_path, skip=5)
         # end_time = time.time()
         # print('total time: ', (end_time - start_time) / 60)
 
@@ -178,6 +181,6 @@ def main(save_path, dataset_dir):
 
 if __name__ == "__main__":
     save_path = "data/vtx"
-    dataset_dir = "data/COMBINE_DATA_V3"
+    dataset_dir = "../../datasets/VTX/COMBINE_DATA_V3"
     print("START")
     main(save_path, dataset_dir)
