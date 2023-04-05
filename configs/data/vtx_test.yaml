@@ -1,0 +1,6 @@
+defaults:
+  - default.yaml
+  - _self_
+sources: vtx_test
+height: 256
+width: 128

@@ -4,7 +4,7 @@ import os.path as osp
 from torchreid.reid.data.datasets.dataset import ImageDataset
 
 
-class VTX_MINI(ImageDataset):
+class VTX_TEST(ImageDataset):
     """
     Dataset statistics:
         - identities: ? (train + query).
@@ -12,7 +12,7 @@ class VTX_MINI(ImageDataset):
         - cameras: ?
     """
 
-    dataset_dir = "vtx_mini"
+    dataset_dir = "vtx_test"
     dataset_url = "..."
 
     def __init__(self, root="", **kwargs):
@@ -36,7 +36,7 @@ class VTX_MINI(ImageDataset):
         query = self.process_dir(self.query_dir, relabel=False)
         gallery = self.process_dir(self.gallery_dir, relabel=False)
 
-        super(VTX_MINI, self).__init__(train, query, gallery, **kwargs)
+        super(VTX_TEST, self).__init__(train, query, gallery, **kwargs)
 
     def process_dir(self, dir_path, relabel=False):
         human_dirs = glob.glob(osp.join(dir_path, "*"))
@@ -68,4 +68,4 @@ class VTX_MINI(ImageDataset):
 
 
 if __name__ == "__main__":
-    data = VTX_MINI("./data")
+    data = VTX_TEST("./data")

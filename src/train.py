@@ -14,6 +14,7 @@ pyrootutils.setup_root(__file__, indicator=".project-root", pythonpath=True)
 
 from src.data.vtx import VTX
 from src.data.vtx_mini import VTX_MINI
+from src.data.vtx_test import VTX_TEST
 
 
 def osnet_x1_0(num_classes=1000,
@@ -43,6 +44,8 @@ def train(cfg: DictConfig) -> Tuple[dict, dict]:
         register_image_dataset('vtx', VTX)
     elif cfg.data.sources == 'vtx_mini':
         register_image_dataset('vtx_mini', VTX_MINI)
+    elif cfg.data.sources == 'vtx_test':
+        register_image_dataset('vtx_test', VTX_TEST)
     else:
         raise ValueError('Invalid dataset name')
 
