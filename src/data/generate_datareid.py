@@ -181,6 +181,6 @@ def main(save_path, dataset_dir):
 
 if __name__ == "__main__":
     save_path = "data/vtx"
-    dataset_dir = "../../datasets/VTX/COMBINE_DATA_V3"
+    dataset_dir = "data/VTX/COMBINE_DATA_V3"
     print("START")
     main(save_path, dataset_dir)

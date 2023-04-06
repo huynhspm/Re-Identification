@@ -33,13 +33,14 @@ class VTX(ImageDataset):
         self.check_before_run(required_files)
 
         train = self.process_dir(self.train_dir, relabel=True)
-        query = self.process_dir(self.query_dir, relabel=False)
-        gallery = self.process_dir(self.gallery_dir, relabel=False)
+        query = self.process_dir(self.query_dir, relabel=True)
+        gallery = self.process_dir(self.gallery_dir, relabel=True)
 
         super(VTX, self).__init__(train, query, gallery, **kwargs)
 
     def process_dir(self, dir_path, relabel=False):
         human_dirs = glob.glob(osp.join(dir_path, "*"))
+        human_dirs.sort()
 
         humanId_container = set()
         for human_dir in human_dirs:
