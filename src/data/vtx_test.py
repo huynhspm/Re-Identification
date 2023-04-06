@@ -41,7 +41,7 @@ class VTX_TEST(ImageDataset):
     def process_dir(self, dir_path, relabel=False):
         human_dirs = glob.glob(osp.join(dir_path, "*"))
         human_dirs.sort()
-        
+
         humanId_container = set()
         for human_dir in human_dirs:
             humanId = human_dir.split("/")[-1]

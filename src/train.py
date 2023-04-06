@@ -58,8 +58,6 @@ def train(cfg: DictConfig) -> Tuple[dict, dict]:
                                    batch_size_test=cfg.data.batch_size_test,
                                    transforms=list(cfg.data.transforms))
 
-    dataloader = datamanager.test_loader
-
     pretrained = (cfg.model_path and check_isfile(cfg.model_path))
 
     model = osnet_x1_0(num_classes=datamanager.num_train_pids,

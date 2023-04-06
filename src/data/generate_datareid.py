@@ -1,10 +1,17 @@
+from typing import Tuple
+
 import os
 import cv2
 import glob
-import time
 import shutil
 import random
 from utils import get_object_frame
+
+import hydra
+import pyrootutils
+from omegaconf import DictConfig
+
+pyrootutils.setup_root(__file__, indicator=".project-root", pythonpath=True)
 
 
 def create_folder(path):
@@ -134,7 +141,7 @@ def init_path(save_path):
     return paths
 
 
-def create_data(save_path, data_dir, valid_scenarios=None):
+def create_data(save_path, data_dir, valid_scenarios=None, skip=1):
     scenarios = glob.glob(os.path.join(data_dir, "*"))
 
     for scenario in scenarios:
@@ -155,32 +162,40 @@ def create_data(save_path, data_dir, valid_scenarios=None):
                 video_path = camera
                 camera_id = camera.split('/')[-1][:6]
                 annotation_path = f"{scenario}/MOT_gt_processed_v2/{duration_id}/{camera_id}/gt/gt.txt"
-                generate_frames(video_path, save_path, annotation_path, skip=5)
+                generate_frames(video_path,
+                                save_path,
+                                annotation_path,
+                                skip=skip)
         # end_time = time.time()
         # print('total time: ', (end_time - start_time) / 60)
 
 
-def main(save_path, dataset_dir):
-
-    train_valid_scenarios = ['1b', '8d', '8c']
-
-    val_valid_scenarios = ['3b']
+@hydra.main(version_base="1.3",
+            config_path="../../configs/data",
+            config_name="generate_data.yaml")
+def main(cfg: DictConfig) -> Tuple[dict, dict]:
+    print("START")
 
     # create dataset folder
-    train_path, gallery_path, query_path = init_path(save_path)
+    train_path, gallery_path, query_path = init_path(cfg.data_type.save_path)
 
     # create train data
-    create_data(train_path, dataset_dir, train_valid_scenarios)
+    create_data(train_path,
+                cfg.dataset_dir,
+                cfg.data_type.train_valid_scenarios,
+                skip=cfg.skip)
 
     # create validation data
-    create_data(gallery_path, dataset_dir, val_valid_scenarios)
+    create_data(gallery_path,
+                cfg.dataset_dir,
+                cfg.data_type.val_valid_scenarios,
+                skip=cfg.skip)
 
     # split data in validation data
     split_gallery_query(query_path, gallery_path)
 
+    print("END")
+
 
 if __name__ == "__main__":
-    save_path = "data/vtx"
-    dataset_dir = "data/VTX/COMBINE_DATA_V3"
-    print("START")
-    main(save_path, dataset_dir)
+    main()

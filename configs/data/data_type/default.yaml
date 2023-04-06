@@ -1,0 +1,3 @@
+save_path: data/vtx
+train_valid_scenarios: [1b, 8c, 8d]
+val_valid_scenarios: [3b]
