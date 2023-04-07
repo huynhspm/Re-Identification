@@ -39,7 +39,6 @@ def osnet_x1_0(num_classes=1000,
             config_path="../configs",
             config_name="train.yaml")
 def train(cfg: DictConfig) -> Tuple[dict, dict]:
-    print(cfg.data)
     if cfg.data.sources == 'vtx':
         register_image_dataset('vtx', VTX)
     elif cfg.data.sources == 'vtx_mini':
@@ -77,10 +76,6 @@ def train(cfg: DictConfig) -> Tuple[dict, dict]:
                                    lr_scheduler=cfg.scheduler.lr_scheduler,
                                    stepsize=cfg.scheduler.stepsize)
 
-    # frozen first layer
-    for param in model.conv1.parameters():
-        param.requires_grad = False
-
     engine = hydra.utils.instantiate(cfg.engine,
                                      datamanager=datamanager,
                                      model=model,
@@ -106,7 +101,9 @@ def train(cfg: DictConfig) -> Tuple[dict, dict]:
                visrank=cfg.visrank,
                visrank_topk=cfg.visrank_topk,
                ranks=cfg.ranks,
-               rerank=cfg.rerank)
+               rerank=cfg.rerank,
+               fixbase_epoch=cfg.fixbase_epoch,
+               open_layers=cfg.open_layers)
 
     print('+++++++++++++++')
     print(datamanager.transform_tr)
