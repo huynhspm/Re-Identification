@@ -14,12 +14,12 @@ defaults:
 
 # task name, determines output directory path
 task_name: "train"
-output_dir: ${paths.log_dir}/osnet_x1_0_origin_market_fine_tune
-model_path: ${paths.log_dir}/osnet_x1_0_origin_market/osnet_x1_0_market_256x128_amsgrad_ep150_stp60_lr0.0015_b64_fb10_softmax_labelsmooth_flip.pth
+output_dir: osnet_x1_0_market_finetune
+model_path: ${paths.log_dir}/osnet_x1_0_market_origin/model/osnet_x1_0_market_256x128_amsgrad_ep150_stp60_lr0.0015_b64_fb10_softmax_labelsmooth_flip.pth
 
 max_epoch: 30
 start_epoch: 0
-print_freq: 10
+print_freq: 50
 start_eval: 0
 eval_freq: 10
 test_only: False
@@ -30,4 +30,4 @@ visrank_topk: 10
 ranks: [1, 5, 10, 20]
 rerank: False
 fixbase_epoch: 2
-open_layers: ["conv3", "conv4", "conv5", "global_avgpool", "fc", "classifier"]
+open_layers: [conv3, conv4, conv5, global_avgpool, fc, classifier]

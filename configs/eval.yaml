@@ -14,8 +14,8 @@ defaults:
 
 # task name, determines output directory path
 task_name: "eval"
-output_dir: ${paths.log_dir}/osnet_x1_0_origin_market
-model_path: ${paths.log_dir}/osnet_x1_0_origin_market/osnet_x1_0_market_256x128_amsgrad_ep150_stp60_lr0.0015_b64_fb10_softmax_labelsmooth_flip.pth
+output_dir: osnet_x1_0_market_finetune
+model_path: model.pth.tar-30
 
 max_epoch: 5
 start_epoch: 0

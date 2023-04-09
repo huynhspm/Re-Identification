@@ -6,6 +6,7 @@ from torchreid.reid.utils import check_isfile, load_pretrained_weights
 from torchreid.reid.data.datasets import register_image_dataset
 from torchreid.reid.optim import build_lr_scheduler, build_optimizer
 
+import os
 import hydra
 import pyrootutils
 from omegaconf import DictConfig
@@ -57,7 +58,9 @@ def eval(cfg: DictConfig) -> Tuple[dict, dict]:
                                    batch_size_test=cfg.data.batch_size_test,
                                    transforms=list(cfg.data.transforms))
 
-    pretrained = (cfg.model_path and check_isfile(cfg.model_path))
+    output_dir = os.path.join(cfg.paths.log_dir, cfg.output_dir)
+    model_path = os.path.join(output_dir, 'model', cfg.model_path)
+    pretrained = (model_path and check_isfile(model_path))
 
     model = osnet_x1_0(num_classes=datamanager.num_train_pids,
                        pretrained=not pretrained,
@@ -66,7 +69,7 @@ def eval(cfg: DictConfig) -> Tuple[dict, dict]:
                        use_gpu=cfg.model.use_gpu)
 
     if pretrained:
-        load_pretrained_weights(model, cfg.model_path)
+        load_pretrained_weights(model, model_path)
 
     model = model.cuda()
     optimizer = build_optimizer(model,
@@ -84,11 +87,11 @@ def eval(cfg: DictConfig) -> Tuple[dict, dict]:
 
     print('+++++++++++++++')
     print('pretrained: ', pretrained)
-    print('model_path: ', cfg.model_path)
+    print('model_path: ', model_path)
     print(model.feature_dim)
     print('+++++++++++++++')
 
-    engine.run(save_dir=cfg.output_dir,
+    engine.run(save_dir=output_dir,
                max_epoch=cfg.max_epoch,
                start_epoch=cfg.start_epoch,
                print_freq=cfg.print_freq,
@@ -104,7 +107,7 @@ def eval(cfg: DictConfig) -> Tuple[dict, dict]:
 
     print('+++++++++++++++')
     print('pretrained: ', pretrained)
-    print('model_path: ', cfg.model_path)
+    print('model_path: ', model_path)
     print(model.feature_dim)
     print('+++++++++++++++')
 

@@ -11,4 +11,4 @@ defaults:
 
 # task name, determines output directory path
 task_name: "inference"
-model_path: ${paths.log_dir}/osnet_x1_0_origin_market/osnet_x1_0_market_256x128_amsgrad_ep150_stp60_lr0.0015_b64_fb10_softmax_labelsmooth_flip.pth
+model_path: ${paths.log_dir}/osnet_x1_0_market_origin/osnet_x1_0_market_256x128_amsgrad_ep150_stp60_lr0.0015_b64_fb10_softmax_labelsmooth_flip.pth

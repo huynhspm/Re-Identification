@@ -2,5 +2,5 @@ defaults:
   - default.yaml
   - _self_
 save_path: data/vtx_mini
-train_valid_scenarios: [8d]
-val_valid_scenarios: [8c]
+train_valid_scenarios: [8d, 8c]
+val_valid_scenarios: [1b]

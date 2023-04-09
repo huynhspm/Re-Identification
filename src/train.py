@@ -6,6 +6,7 @@ from torchreid.reid.utils import check_isfile, load_pretrained_weights
 from torchreid.reid.data.datasets import register_image_dataset
 from torchreid.reid.optim import build_lr_scheduler, build_optimizer
 
+import os
 import hydra
 import pyrootutils
 from omegaconf import DictConfig
@@ -57,6 +58,7 @@ def train(cfg: DictConfig) -> Tuple[dict, dict]:
                                    batch_size_test=cfg.data.batch_size_test,
                                    transforms=list(cfg.data.transforms))
 
+    output_dir = os.path.join(cfg.paths.log_dir, cfg.output_dir)
     pretrained = (cfg.model_path and check_isfile(cfg.model_path))
 
     model = osnet_x1_0(num_classes=datamanager.num_train_pids,
@@ -89,7 +91,7 @@ def train(cfg: DictConfig) -> Tuple[dict, dict]:
     print(model.feature_dim)
     print('+++++++++++++++')
 
-    engine.run(save_dir=cfg.output_dir,
+    engine.run(save_dir=output_dir,
                max_epoch=cfg.max_epoch,
                start_epoch=cfg.start_epoch,
                print_freq=cfg.print_freq,
