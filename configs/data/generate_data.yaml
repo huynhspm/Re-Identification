@@ -1,6 +1,0 @@
-defaults:
-  - data_type: default.yaml
-  - _self_
-
-skip: 1
-dataset_dir: data/VTX/COMBINE_DATA_V3

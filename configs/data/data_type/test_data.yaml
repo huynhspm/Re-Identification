@@ -1,6 +1,0 @@
-defaults:
-  - default.yaml
-  - _self_
-save_path: data/vtx_test
-train_valid_scenarios: [1b]
-val_valid_scenarios: [1b]

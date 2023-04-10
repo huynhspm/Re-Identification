@@ -15,7 +15,7 @@ defaults:
 # task name, determines output directory path
 task_name: "eval"
 output_dir: osnet_x1_0_market_finetune
-model_path: model.pth.tar-30
+model_path: model.pth.tar-10
 
 max_epoch: 5
 start_epoch: 0

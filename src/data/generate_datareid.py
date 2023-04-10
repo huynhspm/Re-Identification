@@ -113,6 +113,7 @@ def generate_frames(video_path, train_path, annotation_path, skip=1):
             for idx, obj in enumerate(group_frame[frameId]):
                 x, y, w, h = list(map(int, obj.coord))
                 obj_id = f"{scenario_id}_ {duration_id}_{obj.track_id}"
+                obj_id = obj.track_id
                 save_path = os.path.join(train_path, f"{obj_id}")
                 crop_obj = image[y:y + h, x:x + w]
 
@@ -157,11 +158,12 @@ def create_data(save_path, data_dir, valid_scenarios=None, skip=1):
             cameras = glob.glob(os.path.join(duration, "*"))
             for camera in cameras:
                 if camera.split('/')[-1] == 'multiple_view.mp4': continue
+                # if camera.split('/')[-1][1] == '_': continue
 
                 print(camera)
                 video_path = camera
                 camera_id = camera.split('/')[-1][:6]
-                annotation_path = f"{scenario}/MOT_gt_processed_v2/{duration_id}/{camera_id}/gt/gt.txt"
+                annotation_path = f"{scenario}/MOT_gt_processed/{duration_id}/{camera_id}/gt/gt.txt"
                 generate_frames(video_path,
                                 save_path,
                                 annotation_path,
@@ -171,24 +173,26 @@ def create_data(save_path, data_dir, valid_scenarios=None, skip=1):
 
 
 @hydra.main(version_base="1.3",
-            config_path="../../configs/data",
+            config_path="../../configs",
             config_name="generate_data.yaml")
 def main(cfg: DictConfig) -> Tuple[dict, dict]:
     print("START")
 
+    save_path = os.path.join(cfg.paths.data_dir, cfg.dataset_name)
+
     # create dataset folder
-    train_path, gallery_path, query_path = init_path(cfg.data_type.save_path)
+    train_path, gallery_path, query_path = init_path(save_path)
 
     # create train data
     create_data(train_path,
-                cfg.dataset_dir,
-                cfg.data_type.train_valid_scenarios,
+                cfg.data_dir,
+                cfg.train_valid_scenarios,
                 skip=cfg.skip)
 
     # create validation data
     create_data(gallery_path,
-                cfg.dataset_dir,
-                cfg.data_type.val_valid_scenarios,
+                cfg.data_dir,
+                cfg.val_valid_scenarios,
                 skip=cfg.skip)
 
     # split data in validation data
