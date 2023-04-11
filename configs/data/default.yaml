@@ -4,7 +4,9 @@ root: ${paths.data_dir}
 sources: vtx
 height: 256
 width: 128
-train_sampler: RandomIdentitySampler
-batch_size_train: 32
+# train_sampler: RandomIdentitySampler - important for triplet loss
+train_sampler: RandomSampler
+batch_size_train: 64
 batch_size_test: 100
+num_instances: 4
 transforms: [random_flip, random_erase]

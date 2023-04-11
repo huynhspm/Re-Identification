@@ -1,0 +1,3 @@
+train_scenes_durations: {1b:[0]}
+val_scenes_durations: {1b:[0]}
+dataset_name: vtx_test

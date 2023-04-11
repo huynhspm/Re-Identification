@@ -108,6 +108,7 @@ def generate_frames(video_path, train_path, annotation_path, skip=1):
 
         if frameId % skip != 0:
             continue
+
         # print(frameId)
 
         if (image is None): continue
@@ -176,6 +177,7 @@ def create_data(save_path, data_dir, scenes_durations=None, skip=1):
                 camera_id = camera.split('/')[-1][:6]
                 annotation_path = f"{scene}/MOT_gt_processed_v2/{duration_id}/{camera_id}/gt/gt.txt"
                 generate_frames(camera, save_path, annotation_path, skip=skip)
+                break
             end_time = time.time()
             print('total time: ', (end_time - start_time) / 60)
 
