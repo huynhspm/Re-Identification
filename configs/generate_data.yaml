@@ -1,11 +1,8 @@
 defaults:
   - paths: default.yaml
   - hydra: default.yaml
-
+  - data_type: full_data.yaml
 task_name: "generate_data"
 
 data_dir: data/VTX/COMBINE_DATA_V3
 skip: 1
-dataset_name: vtx
-train_valid_scenarios: [1b]
-val_valid_scenarios: [1b]

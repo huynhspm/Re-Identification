@@ -1,6 +1,7 @@
 from typing import Tuple
 
 import os
+import time
 import cv2
 import glob
 import shutil
@@ -93,7 +94,7 @@ def generate_frames(video_path, train_path, annotation_path, skip=1):
     print(video_path)
     cam_id = video_path.split('/')[-1][:6]
     duration_id = video_path.split('/')[-2]
-    scenario_id = video_path.split('/')[-4]
+    scene_id = video_path.split('/')[-4]
     print("annotation path: ", annotation_path)
     group_frame = get_object_frame(annotation_path, frame_start=0)
 
@@ -105,15 +106,15 @@ def generate_frames(video_path, train_path, annotation_path, skip=1):
 
         success, image = vidCapture.read()
 
-        if frameId % skip != 0: continue
+        if frameId % skip != 0:
+            continue
         # print(frameId)
 
         if (image is None): continue
         if (len(group_frame[frameId]) != 0):
             for idx, obj in enumerate(group_frame[frameId]):
                 x, y, w, h = list(map(int, obj.coord))
-                obj_id = f"{scenario_id}_ {duration_id}_{obj.track_id}"
-                obj_id = obj.track_id
+                obj_id = f"{scene_id}_{duration_id}_{obj.track_id}"
                 save_path = os.path.join(train_path, f"{obj_id}")
                 crop_obj = image[y:y + h, x:x + w]
 
@@ -142,34 +143,41 @@ def init_path(save_path):
     return paths
 
 
-def create_data(save_path, data_dir, valid_scenarios=None, skip=1):
-    scenarios = glob.glob(os.path.join(data_dir, "*"))
+def create_data(save_path, data_dir, scenes_durations=None, skip=1):
+    scenes = glob.glob(os.path.join(data_dir, "*"))
 
-    for scenario in scenarios:
-        if scenario.split('/')[-1] not in valid_scenarios: continue
+    for scene in scenes:
+        if not os.path.isdir(scene):
+            continue
+        scene_id = scene.split('/')[-1]
+        if scene.split('/')[-1] not in scenes_durations.keys():
+            continue
+        print('----------------------------------------------------')
+        print('scense: ', scene_id)
 
-        print(scenario)
-        durations = glob.glob(os.path.join(scenario, "videos/*"))
-        # start_time = time.time()
+        durations = glob.glob(os.path.join(scene, "videos/*"))
         for duration in durations:
-            if not os.path.isdir(duration): continue
+            if not os.path.isdir(duration):
+                continue
+            duration_id = int(duration.split('/')[-1])
+            if duration_id not in scenes_durations[scene_id]:
+                continue
 
-            duration_id = duration.split('/')[-1]
+            print('duration: ', duration_id)
             cameras = glob.glob(os.path.join(duration, "*"))
+            start_time = time.time()
             for camera in cameras:
-                if camera.split('/')[-1] == 'multiple_view.mp4': continue
-                # if camera.split('/')[-1][1] == '_': continue
+                if camera.split('/')[-1] == 'multiple_view.mp4':
+                    continue
+                if camera.split('/')[-1][1] == '_':
+                    continue
 
-                print(camera)
-                video_path = camera
+                print('camera: ', camera)
                 camera_id = camera.split('/')[-1][:6]
-                annotation_path = f"{scenario}/MOT_gt_processed/{duration_id}/{camera_id}/gt/gt.txt"
-                generate_frames(video_path,
-                                save_path,
-                                annotation_path,
-                                skip=skip)
-        # end_time = time.time()
-        # print('total time: ', (end_time - start_time) / 60)
+                annotation_path = f"{scene}/MOT_gt_processed_v2/{duration_id}/{camera_id}/gt/gt.txt"
+                generate_frames(camera, save_path, annotation_path, skip=skip)
+            end_time = time.time()
+            print('total time: ', (end_time - start_time) / 60)
 
 
 @hydra.main(version_base="1.3",
@@ -178,7 +186,7 @@ def create_data(save_path, data_dir, valid_scenarios=None, skip=1):
 def main(cfg: DictConfig) -> Tuple[dict, dict]:
     print("START")
 
-    save_path = os.path.join(cfg.paths.data_dir, cfg.dataset_name)
+    save_path = os.path.join(cfg.paths.data_dir, cfg.data_type.dataset_name)
 
     # create dataset folder
     train_path, gallery_path, query_path = init_path(save_path)
@@ -186,13 +194,13 @@ def main(cfg: DictConfig) -> Tuple[dict, dict]:
     # create train data
     create_data(train_path,
                 cfg.data_dir,
-                cfg.train_valid_scenarios,
+                cfg.data_type.train_scenes_durations,
                 skip=cfg.skip)
 
     # create validation data
     create_data(gallery_path,
                 cfg.data_dir,
-                cfg.val_valid_scenarios,
+                cfg.data_type.val_scenes_durations,
                 skip=cfg.skip)
 
     # split data in validation data

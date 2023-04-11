@@ -1,0 +1,3 @@
+train_scenes_durations: {5a:[0]}
+val_scenes_durations: {10d:[0]}
+dataset_name: vtx_uniform
