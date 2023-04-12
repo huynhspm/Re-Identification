@@ -49,14 +49,16 @@ def train(cfg: DictConfig) -> Tuple[dict, dict]:
     else:
         raise ValueError('Invalid dataset name')
 
-    datamanager = ImageDataManager(root=cfg.data.root,
-                                   sources=cfg.data.sources,
-                                   height=cfg.data.height,
-                                   width=cfg.data.width,
-                                   train_sampler=cfg.data.train_sampler,
-                                   batch_size_train=cfg.data.batch_size_train,
-                                   batch_size_test=cfg.data.batch_size_test,
-                                   transforms=list(cfg.data.transforms))
+    datamanager = ImageDataManager(
+        root=cfg.data.root,
+        sources=cfg.data.sources,
+        height=cfg.data.height,
+        width=cfg.data.width,
+        train_sampler='RandomIdentitySampler'
+        if cfg.model.loss == "triplet" else "RandomSampler",
+        batch_size_train=cfg.data.batch_size_train,
+        batch_size_test=cfg.data.batch_size_test,
+        transforms=list(cfg.data.transforms))
 
     output_dir = os.path.join(cfg.paths.log_dir, cfg.output_dir)
     pretrained = (cfg.model_path and check_isfile(cfg.model_path))
