@@ -49,16 +49,15 @@ def train(cfg: DictConfig) -> Tuple[dict, dict]:
     else:
         raise ValueError('Invalid dataset name')
 
-    datamanager = ImageDataManager(
-        root=cfg.data.root,
-        sources=cfg.data.sources,
-        height=cfg.data.height,
-        width=cfg.data.width,
-        train_sampler='RandomIdentitySampler'
-        if cfg.model.loss == "triplet" else "RandomSampler",
-        batch_size_train=cfg.data.batch_size_train,
-        batch_size_test=cfg.data.batch_size_test,
-        transforms=list(cfg.data.transforms))
+    train_sampler = 'RandomIdentitySampler' if cfg.model.loss == "triplet" else "RandomSampler"
+    datamanager = ImageDataManager(root=cfg.data.root,
+                                   sources=cfg.data.sources,
+                                   height=cfg.data.height,
+                                   width=cfg.data.width,
+                                   train_sampler=train_sampler,
+                                   batch_size_train=cfg.data.batch_size_train,
+                                   batch_size_test=cfg.data.batch_size_test,
+                                   transforms=list(cfg.data.transforms))
 
     output_dir = os.path.join(cfg.paths.log_dir, cfg.output_dir)
     pretrained = (cfg.model_path and check_isfile(cfg.model_path))
@@ -72,7 +71,9 @@ def train(cfg: DictConfig) -> Tuple[dict, dict]:
     if pretrained:
         load_pretrained_weights(model, cfg.model_path)
 
-    model = model.cuda()
+    if cfg.model.use_gpu:
+        model = model.cuda()
+
     optimizer = build_optimizer(model,
                                 optim=cfg.optimizer.optim,
                                 lr=cfg.optimizer.lr)
@@ -86,12 +87,15 @@ def train(cfg: DictConfig) -> Tuple[dict, dict]:
                                      optimizer=optimizer,
                                      scheduler=scheduler)
 
-    print('+++++++++++++++')
-    print(datamanager.transform_tr)
+    print('+++++++++++++++++++++++++++++++++++++')
+    print('transform: ', datamanager.transform_tr)
+    print('engine: ', engine)
+    print('model_loss: ', model.loss)
+    print('train_sample: ', train_sampler)
     print('pretrained: ', pretrained)
     print('model_path: ', cfg.model_path)
-    print(model.feature_dim)
-    print('+++++++++++++++')
+    print('feature_dim: ', model.feature_dim)
+    print('+++++++++++++++++++++++++++++++++++++')
 
     engine.run(save_dir=output_dir,
                max_epoch=cfg.max_epoch,
@@ -109,12 +113,15 @@ def train(cfg: DictConfig) -> Tuple[dict, dict]:
                fixbase_epoch=cfg.fixbase_epoch,
                open_layers=cfg.open_layers)
 
-    print('+++++++++++++++')
-    print(datamanager.transform_tr)
+    print('+++++++++++++++++++++++++++++++++++++')
+    print('transform: ', datamanager.transform_tr)
+    print('engine: ', engine)
+    print('model_loss: ', model.loss)
+    print('train_sample: ', train_sampler)
     print('pretrained: ', pretrained)
     print('model_path: ', cfg.model_path)
-    print(model.feature_dim)
-    print('+++++++++++++++')
+    print('feature_dim: ', model.feature_dim)
+    print('+++++++++++++++++++++++++++++++++++++')
 
 
 if __name__ == "__main__":

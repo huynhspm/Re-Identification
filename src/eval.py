@@ -43,8 +43,6 @@ def visactmap(model,
         img_mean = IMAGENET_MEAN
         img_std = IMAGENET_STD
 
-    model.eval()
-
     for target in list(test_loader.keys()):
         data_loader = test_loader[target]['query']  # only process query images
         # original images and activation maps are saved individually
@@ -155,16 +153,15 @@ def eval(cfg: DictConfig) -> Tuple[dict, dict]:
     else:
         raise ValueError('Invalid dataset name')
 
-    datamanager = ImageDataManager(
-        root=cfg.data.root,
-        sources=cfg.data.sources,
-        height=cfg.data.height,
-        width=cfg.data.width,
-        train_sampler='RandomIdentitySampler'
-        if cfg.model.loss == "triplet" else "RandomSampler",
-        batch_size_train=cfg.data.batch_size_train,
-        batch_size_test=cfg.data.batch_size_test,
-        transforms=list(cfg.data.transforms))
+    train_sampler = 'RandomIdentitySampler' if cfg.model.loss == "triplet" else "RandomSampler"
+    datamanager = ImageDataManager(root=cfg.data.root,
+                                   sources=cfg.data.sources,
+                                   height=cfg.data.height,
+                                   width=cfg.data.width,
+                                   train_sampler=train_sampler,
+                                   batch_size_train=cfg.data.batch_size_train,
+                                   batch_size_test=cfg.data.batch_size_test,
+                                   transforms=list(cfg.data.transforms))
 
     output_dir = osp.join(cfg.paths.log_dir, cfg.output_dir)
     model_path = osp.join(output_dir, 'model', cfg.model_path)
@@ -182,6 +179,8 @@ def eval(cfg: DictConfig) -> Tuple[dict, dict]:
     if cfg.model.use_gpu:
         model = model.cuda()
 
+    model.eval()
+
     optimizer = build_optimizer(model,
                                 optim=cfg.optimizer.optim,
                                 lr=cfg.optimizer.lr)
@@ -195,11 +194,15 @@ def eval(cfg: DictConfig) -> Tuple[dict, dict]:
                                      optimizer=optimizer,
                                      scheduler=scheduler)
 
-    print('+++++++++++++++')
+    print('+++++++++++++++++++++++++++++++++++++')
+    print('transform: ', datamanager.transform_tr)
+    print('engine: ', engine)
+    print('model_loss: ', model.loss)
+    print('train_sample: ', train_sampler)
     print('pretrained: ', pretrained)
-    print('model_path: ', model_path)
-    print(model.feature_dim)
-    print('+++++++++++++++')
+    print('model_path: ', cfg.model_path)
+    print('feature_dim: ', model.feature_dim)
+    print('+++++++++++++++++++++++++++++++++++++')
 
     engine.run(save_dir=output_dir,
                max_epoch=cfg.max_epoch,
