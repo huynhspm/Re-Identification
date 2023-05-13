@@ -6,3 +6,4 @@ task_name: "generate_data"
 
 data_dir: data/VTX/COMBINE_DATA_V3
 skip: 1
+query_sample: 1

@@ -187,6 +187,11 @@ def create_data(save_path, data_dir, scenes_durations=None, skip=1):
 def main(cfg: DictConfig) -> Tuple[dict, dict]:
     print("START")
 
+    try:
+        os.makedirs("data")
+    except FileExistsError:
+        pass
+
     save_path = os.path.join(cfg.paths.data_dir, cfg.data_type.dataset_name)
 
     # create dataset folder
@@ -205,7 +210,7 @@ def main(cfg: DictConfig) -> Tuple[dict, dict]:
                 skip=cfg.skip)
 
     # split data in validation data
-    split_gallery_query(query_path, gallery_path)
+    split_gallery_query(query_path, gallery_path, query_sample=cfg.query_sample)
 
     print("END")
 
