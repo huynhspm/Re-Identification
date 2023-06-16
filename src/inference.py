@@ -46,12 +46,13 @@ def objective(thres_hold):
     for image_1 in images:
         for image_2 in images:
             dist = (image_1['embedding'] - image_2['embedding'])**2
-            dist = torch.sqrt(dist.sum()).detach().cpu()
+            dist = torch.sqrt(dist.sum())
             if dist == 0: continue
 
-            loss += 1 if (dist <= thres_hold and image_1['id'] == image_2['id']
-                          ) or (dist > thres_hold
-                                and image_1['id'] != image_2['id']) else 0
+            if dist <= thres_hold and image_1['id'] == image_2['id']:
+                loss += 1
+            if dist > thres_hold and image_1['id'] != image_2['id']:
+                loss += 1
 
     return -loss
 
@@ -62,14 +63,14 @@ def hyperopt_search():
     best = fmin(objective,
                 space=hp.uniform('thres_hold', 1, 16),
                 algo=tpe.suggest,
-                max_evals=1000,
+                max_evals=100,
                 trials=trials)
     print(best)
     return best
 
 
 def get_embedding_vector(model, image_dir):
-    images_path = glob.glob(osp.join(image_dir, '*.jpg'))[:10]
+    images_path = glob.glob(osp.join(image_dir, '*.jpg'))[:20]
     id = image_dir.split('/')[-1]
 
     for image_path in images_path:
@@ -77,7 +78,8 @@ def get_embedding_vector(model, image_dir):
         image = image[..., ::-1]
         image = transform(image.copy())
         image = image.unsqueeze(0)
-        embedding = model(image.to('cuda'))
+        embedding = model(image.to('cuda')).detach().cpu()
+        image = image.detach().cpu()
         images.append({'id': id, 'embedding': embedding.squeeze()})
     return images
 
@@ -109,10 +111,9 @@ def inference(cfg: DictConfig) -> Tuple[dict, dict]:
     model.eval()
     model = model.cuda()
 
-    # get_embedding_vector(model, 'data/vtx/gallery/1b_0_1')
-    get_embedding_vector(model, 'data/vtx/gallery/8d_17_47')
-    get_embedding_vector(model, 'data/vtx/gallery/8d_17_48')
-    get_embedding_vector(model, 'data/vtx/gallery/8d_17_72')
+    get_embedding_vector(model, 'data/vtx/gallery/8a_8_16')
+    get_embedding_vector(model, 'data/vtx/gallery/8a_8_17')
+    get_embedding_vector(model, 'data/vtx/gallery/8a_8_18')
     thres_hold = hyperopt_search()['thres_hold']
 
     right1 = 0
@@ -131,6 +132,12 @@ def inference(cfg: DictConfig) -> Tuple[dict, dict]:
             else:
                 if dist > thres_hold: right2 += 1
                 else: wrong2 += 1
+
+    print('+++++++++++++++')
+    print('pretrained: ', pretrained)
+    print('model_path: ', model_path)
+    print(model.feature_dim)
+    print('+++++++++++++++')
     print('num_images:', len(images))
     print('right1:', right1, 'wrong1:', wrong1, 'right2:', right2, 'wrong:',
           wrong2)
